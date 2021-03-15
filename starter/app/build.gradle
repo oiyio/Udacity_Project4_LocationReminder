@@ -7,7 +7,7 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.udacity.project4"
@@ -16,6 +16,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -37,6 +38,7 @@ android {
     //}
     buildFeatures {
         dataBinding true
+        viewBinding true
     }
 }
 
@@ -116,6 +118,8 @@ dependencies {
     androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:$dexMakerVersion"
     androidTestImplementation('org.koin:koin-test:2.0.1') { exclude group: 'org.mockito' }
 
+    // firebase
+    implementation 'com.firebaseui:firebase-ui-auth:7.1.1'
 
 
     //Maps & Geofencing
