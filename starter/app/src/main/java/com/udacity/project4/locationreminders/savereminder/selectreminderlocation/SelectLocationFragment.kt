@@ -1,6 +1,7 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentSender
@@ -11,6 +12,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.*
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.api.ResolvableApiException
@@ -159,7 +161,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     }
             )
         } else {
-            requestForegroundAndBackgroundLocationPermissions(this)
+            requestForegroundLocationPermission(this)
         }
     }
 
@@ -177,42 +179,28 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                         }
                 )
             } else {
-                requestForegroundAndBackgroundLocationPermissions(this)
+                requestForegroundLocationPermission(this)
             }
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        fun showSnackbarWithSettingsAction() {
-            Snackbar.make(requireActivity().findViewById(android.R.id.content), R.string.permission_denied_explanation, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.settings) {
-                        // Launches App settings screen.
-                        startActivity(
-                                Intent().apply {
-                                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                                    data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                })
-                    }.show()
+        if(isPermissionGranted(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)){
+            if(isPermissionGranted(requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                checkDeviceLocationSettings(
+                        activity = requireActivity(),
+                        resolve = false,
+                        lambda = {
+                            moveCameraToCurrentLocation()
+                        }
+                )
+            }
+            else{
+                requestBackgroundLocationPermission(this)
+            }
         }
-
-        fun isPermissionDenied(_requestCode: Int): Boolean {
-            return grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED ||
-                    (requestCode == _requestCode && grantResults[0] == PackageManager.PERMISSION_DENIED)
-        }
-
-        if (isPermissionDenied(REQUEST_FOREGROUND_ONLY_PERMISSION_REQUEST_CODE)) {
-            showSnackbarWithSettingsAction()
-        } else if (isPermissionDenied(REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE)) {
-            showSnackbarWithSettingsAction()
-        } else {
-            checkDeviceLocationSettings(
-                    activity = requireActivity(),
-                    resolve = false,
-                    lambda = {
-                        moveCameraToCurrentLocation()
-                    }
-            )
+        else{
+            showSnackbarWithSettingsAction(requireActivity())
         }
     }
 

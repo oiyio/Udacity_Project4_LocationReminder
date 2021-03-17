@@ -1,34 +1,30 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.IntentSender
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.REQUEST_TURN_DEVICE_LOCATION_ON
 import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.foregroundAndBackgroundLocationPermissionGranted
-import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.requestForegroundAndBackgroundLocationPermissions
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.isPermissionGranted
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.requestBackgroundLocationPermission
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.requestForegroundLocationPermission
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.showSnackbarWithSettingsAction
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
@@ -38,15 +34,10 @@ class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofencingClient: GeofencingClient
-    /*private lateinit var viewModel: GeofenceViewModel*/
 
     private val TAG = this.javaClass.name
 
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
-        intent.action = ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
+    private lateinit var geofencePendingIntent: PendingIntent
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -60,6 +51,11 @@ class SaveReminderFragment : BaseFragment() {
         binding.viewModel = _viewModel
 
         geofencingClient = LocationServices.getGeofencingClient(requireContext())
+
+        // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling addGeofences() and removeGeofences().
+        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+        intent.action = ACTION_GEOFENCE_EVENT
+        geofencePendingIntent = PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         return binding.root
     }
@@ -86,12 +82,39 @@ class SaveReminderFragment : BaseFragment() {
 
     private fun checkPermissions(reminderDataItem: ReminderDataItem) {
         if (foregroundAndBackgroundLocationPermissionGranted(requireContext())) {
-            checkDeviceLocationSettings(activity = requireActivity(),
-                    lambda = {
-                        addGeofence(reminderDataItem)
-                    })
+            activity?.let {
+                checkDeviceLocationSettings(it,
+                        lambda = {
+                            addGeofence(reminderDataItem)
+                        })
+            }
         } else {
-            requestForegroundAndBackgroundLocationPermissions(this)
+            requestForegroundLocationPermission(this)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        context?.let {
+            if (isPermissionGranted(it, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                if (isPermissionGranted(it, Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                    activity?.let {
+                        checkDeviceLocationSettings(
+                                it,
+                                resolve = false,
+                                lambda = {
+                                    addGeofence(_viewModel.getReminderDataItem())
+                                }
+                        )
+                    }
+
+                } else {
+                    requestBackgroundLocationPermission(this)
+                }
+            } else {
+                activity?.let {
+                    showSnackbarWithSettingsAction(it)
+                }
+            }
         }
     }
 
@@ -161,28 +184,6 @@ class SaveReminderFragment : BaseFragment() {
                     }
                 }
     }
-
-    /**
-     * Removes geofences. This method should be called after the user has granted the location
-     * permission.
-     */
-    /*private fun removeGeofences() {
-        if (!foregroundAndBackgroundLocationPermissionApproved()) {
-            return
-        }
-        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-            addOnSuccessListener {
-                // Geofences removed
-                Log.d(TAG, getString(R.string.geofences_removed))
-                Toast.makeText(applicationContext, R.string.geofences_removed, Toast.LENGTH_SHORT)
-                        .show()
-            }
-            addOnFailureListener {
-                // Failed to remove geofences
-                Log.d(TAG, getString(R.string.geofences_not_removed))
-            }
-        }
-    }*/
 
 
     companion object {
