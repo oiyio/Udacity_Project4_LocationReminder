@@ -99,9 +99,36 @@ class RemindersLocalRepositoryTest {
         repository.saveReminder(reminderDto1)
         repository.saveReminder(reminderDto2)
 
-        val remindersListFromRepo = repository.getReminders() as Result.Success
+        val remindersListFromRepo = repository.getReminders() as Result.Success // cast here
         assertThat(remindersListFromRepo.data.size, `is`(2))
+
         assertThat(remindersListFromRepo.data[0].id, `is`(reminderDto1.id))
+        assertThat(remindersListFromRepo.data[0].title, `is`(reminderDto1.title))
+        assertThat(remindersListFromRepo.data[0].description, `is`(reminderDto1.description))
+        assertThat(remindersListFromRepo.data[0].latitude, `is`(reminderDto1.latitude))
+        assertThat(remindersListFromRepo.data[0].longitude, `is`(reminderDto1.longitude))
+        assertThat(remindersListFromRepo.data[0].location, `is`(reminderDto1.location))
+
         assertThat(remindersListFromRepo.data[1].id, `is`(reminderDto2.id))
+        assertThat(remindersListFromRepo.data[1].title, `is`(reminderDto2.title))
+        assertThat(remindersListFromRepo.data[1].description, `is`(reminderDto2.description))
+        assertThat(remindersListFromRepo.data[1].latitude, `is`(reminderDto2.latitude))
+        assertThat(remindersListFromRepo.data[1].longitude, `is`(reminderDto2.longitude))
+        assertThat(remindersListFromRepo.data[1].location, `is`(reminderDto2.location))
+    }
+
+    @Test
+    fun delete_all_reminders() = runBlocking {
+        repository.saveReminder(reminderDto1)
+        repository.saveReminder(reminderDto2)
+
+        val remindersList1 = repository.getReminders() as Result.Success // cast here
+        assertThat(remindersList1.data.size, `is`(2))
+
+        repository.deleteAllReminders()
+
+        val remindersList2 = repository.getReminders() as Result.Success
+        assertThat(remindersList2.data.size, `is`(0)) // check size using  hamcrest
+        Truth.assertThat(remindersList2.data).hasSize(0) // check size using Truth
     }
 }
