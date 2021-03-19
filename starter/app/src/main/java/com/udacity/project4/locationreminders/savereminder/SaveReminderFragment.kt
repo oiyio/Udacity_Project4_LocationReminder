@@ -54,7 +54,7 @@ class SaveReminderFragment : BaseFragment() {
 
         // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling addGeofences() and removeGeofences().
         val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
-        intent.action = ACTION_GEOFENCE_EVENT
+        intent.action = GeofencingConstants.ACTION_GEOFENCE_EVENT
         geofencePendingIntent = PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         return binding.root
@@ -184,18 +184,13 @@ class SaveReminderFragment : BaseFragment() {
                     }
                 }
     }
-
-
-    companion object {
-        internal const val ACTION_GEOFENCE_EVENT =
-                "SaveReminderFragment.action.ACTION_GEOFENCE_EVENT"
-    }
-
-
 }
 
 internal object GeofencingConstants {
     val GEOFENCE_RADIUS_IN_METERS = 100f
+
+    val ACTION_GEOFENCE_EVENT =
+            "SaveReminderFragment.action.ACTION_GEOFENCE_EVENT"
 
     /**
      * Used to set an expiration time for a geofence. After this amount of time, Location services
