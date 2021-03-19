@@ -2,7 +2,7 @@
 
 buildscript {
     ext.kotlinVersion = '1.4.31'
-    ext.navigationVersion = "2.2.0"
+    ext.navigationVersion = "2.3.4"
 
     repositories {
         google()
@@ -47,7 +47,7 @@ ext {
     materialVersion = '1.1.0'
     fragmentVersion = '1.1.0-alpha07'
     recyclerViewVersion = '1.1.0'
-    mockitoVersion = '3.0.0'
+    mockitoVersion = '2.8.9' // // 3.0.0 version does not work properly. 2.9 version works correctly https://github.com/mockito/mockito/issues/2059
     constraintVersion = '2.0.0-rc1'
     dexMakerVersion = '2.12.1'
     coroutinesVersion = '1.2.1'

@@ -9,5 +9,7 @@ import org.junit.runner.RunWith
 class RemindersListViewModelTest {
 
     //TODO: provide testing to the RemindersListViewModel and its live data objects
+    /* fun `Foo should return bar`(){
 
+     }*/
 }
