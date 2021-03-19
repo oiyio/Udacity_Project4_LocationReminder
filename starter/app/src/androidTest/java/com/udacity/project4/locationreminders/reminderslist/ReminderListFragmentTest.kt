@@ -23,6 +23,7 @@ import com.udacity.project4.locationreminders.data.local.RemindersLocalRepositor
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -33,15 +34,17 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 
+/*
+*  🔥 🦍 🦕  HEY YOU!!! TURN OFF THE ANIMATION SETTINGS IN YOUR DEVICE. I forgot it and spend many hours to find the reason.
+* */
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
 //UI Testing
 @MediumTest
-class ReminderListFragmentTest : KoinTest {
+class ReminderListFragmentTest {
 
 
     private lateinit var repository: ReminderDataSource
@@ -68,6 +71,14 @@ class ReminderListFragmentTest : KoinTest {
         }
 
         single { LocalDB.createRemindersDao(get()) }  // if you want instance of RemindersDao, i will give you it by calling LocalDB.createRemindersDao( context )
+        /*alternatively you write an in-memory roomdb as the following
+        * single {
+            Room.inMemoryDatabaseBuilder(
+                    getApplicationContext(),
+                    RemindersDatabase::class.java
+            ).allowMainThreadQueries().build().reminderDao()
+        }
+        * */
 
         single<ReminderDataSource> { RemindersLocalRepository(get()) }   // if you want instance of ReminderDataSource interface, i will give you instance of RemindersLocalRepository.
         // single{ RemindersLocalRepository(get()) as ReminderDataSource } // you can do the above line with this line instead. They are the same.
@@ -89,9 +100,13 @@ class ReminderListFragmentTest : KoinTest {
         }
     }
 
-    /*
-    At first launch of ReminderListFragment, there is no reminder. Thus "No Data" is shown.
-    */
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
+
+
+    //At first launch of ReminderListFragment, there is no reminder. Thus "No Data" is shown.
     @Test
     fun at_first_launch_there_is_no_reminder_thus_no_Data_text_is_shown_in_textView() {
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
@@ -103,10 +118,7 @@ class ReminderListFragmentTest : KoinTest {
         )
     }
 
-
-    /*
-    When we click fab button, open ReminderListFragment.
-    */
+    //When we click fab button, open ReminderListFragment.
     @Test
     fun when_fab_is_clicked_navigate_to_ReminderListFragment2() {
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
@@ -116,7 +128,6 @@ class ReminderListFragmentTest : KoinTest {
         }
 
         onView(withId(R.id.addReminderFAB)).perform(click())
-        // assertThat(navController.currentDestination?.label).isEqualTo("ReminderListFragment")
         verify(navController).navigate(ReminderListFragmentDirections.toSaveReminder())
     }
 
