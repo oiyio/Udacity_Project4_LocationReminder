@@ -122,7 +122,7 @@ dependencies {
     implementation "androidx.fragment:fragment:$fragmentVersion"
     androidTestImplementation "org.mockito:mockito-core:$mockitoVersion"   // 3.0.0 version does not work properly. 2.9 version works correctly https://github.com/mockito/mockito/issues/2059
     androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:$dexMakerVersion"
-    androidTestImplementation('org.koin:koin-test:2.0.1') { exclude group: 'org.mockito' }
+    androidTestImplementation('org.koin:koin-test:2.2.2') { exclude group: 'org.mockito' }
 
     // firebase
     implementation 'com.firebaseui:firebase-ui-auth:7.1.1'

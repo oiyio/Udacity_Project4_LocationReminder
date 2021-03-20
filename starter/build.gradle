@@ -52,7 +52,7 @@ ext {
     dexMakerVersion = '2.12.1'
     coroutinesVersion = '1.2.1'
     roomVersion = '2.2.5'
-    koinVersion = '2.0.1'
+    koinVersion = '2.2.2'
     truthVersion = '1.0.1'
     junitVersion = '4.13.2'
     androidXTestCoreVersion = '1.2.0-beta01'

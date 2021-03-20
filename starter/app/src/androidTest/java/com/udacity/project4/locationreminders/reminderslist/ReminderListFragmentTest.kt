@@ -1,12 +1,12 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -30,10 +30,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import org.koin.test.AutoCloseKoinTest
+import org.koin.test.get
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 
@@ -44,13 +45,31 @@ import org.mockito.Mockito.verify
 @ExperimentalCoroutinesApi
 //UI Testing
 @MediumTest
-class ReminderListFragmentTest {
+class ReminderListFragmentTest : AutoCloseKoinTest() {
 
 
     private lateinit var repository: ReminderDataSource
+    private lateinit var appContext: Application
 
     @get: Rule
     var instantExecutorRule = InstantTaskExecutorRule()
+
+
+    @Before
+    fun setup() {
+        stopKoin()
+        appContext = getApplicationContext()
+        startKoin {
+            androidContext(appContext)
+            modules(listOf(testModules))
+        }
+
+        repository = get()
+
+        runBlocking {
+            repository.deleteAllReminders()
+        }
+    }
 
     private val testModules = module {
         // single<Application> { getApplicationContext() }   // if you want Application instance, getApplicationContext() will give you it.
@@ -58,19 +77,19 @@ class ReminderListFragmentTest {
 
         viewModel {
             RemindersListViewModel(
-                    get(), // Application instance
-                    get()    // if you want instance of ReminderDataSource interface, i will give you instance of RemindersLocalRepository.
+                appContext, // Application instance
+                get()    // if you want instance of ReminderDataSource interface, i will give you instance of RemindersLocalRepository.
             )
         }
 
-        viewModel {
+        single {
             SaveReminderViewModel(
-                    get(), // Application instance
-                    get()  // if you want instance of ReminderDataSource interface, i will give you instance of RemindersLocalRepository.
+                appContext, // Application instance
+                get()  // if you want instance of ReminderDataSource interface, i will give you instance of RemindersLocalRepository.
             )
         }
 
-        single { LocalDB.createRemindersDao(get()) }  // if you want instance of RemindersDao, i will give you it by calling LocalDB.createRemindersDao( context )
+        single { LocalDB.createRemindersDao(appContext) }  // if you want instance of RemindersDao, i will give you it by calling LocalDB.createRemindersDao( context )
         /*alternatively you write an in-memory roomdb as the following
         * single {
             Room.inMemoryDatabaseBuilder(
@@ -82,22 +101,6 @@ class ReminderListFragmentTest {
 
         single<ReminderDataSource> { RemindersLocalRepository(get()) }   // if you want instance of ReminderDataSource interface, i will give you instance of RemindersLocalRepository.
         // single{ RemindersLocalRepository(get()) as ReminderDataSource } // you can do the above line with this line instead. They are the same.
-    }
-
-    @Before
-    fun setup() {
-        stopKoin()
-
-        startKoin {
-            androidContext(ApplicationProvider.getApplicationContext())
-            modules(listOf(testModules))
-        }
-
-        repository = GlobalContext.get().koin.get()
-
-        runBlocking {
-            repository.deleteAllReminders()
-        }
     }
 
     @After
