@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -44,7 +43,8 @@ class AuthenticationActivity : AppCompatActivity() {
                     finish()
                 }
                 AuthenticationViewModel.AuthenticationState.UNAUTHENTICATED -> {
-                    Toast.makeText(this, "unauthenticated !", Toast.LENGTH_LONG).show()
+                    // Toast.makeText(this, "unauthenticated !", Toast.LENGTH_LONG).show()
+                    Log.e(TAG, "unauthenticated !")
                 }
                 else -> {
                     Log.e(TAG, "Authentication state that doesn't require any UI change $it")
