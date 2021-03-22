@@ -180,7 +180,7 @@ class SaveReminderViewModelTest {
         val reminder2 = ReminderDataItem(null, "mydescription", "mylocation", 5.0, 8.0)
         assertThat(saveReminderViewModel.validateAndSaveReminder(reminder2), `is`(false))
         val resultReminderDataItem2 = fakeDataSource.getReminder(reminder2.id) as Result.Error
-        assertThat(resultReminderDataItem2.message, `is`("Reminder not found"))
+        assertThat(resultReminderDataItem2.message, `is`("Error - No reminder found with this id"))
         Truth.assertThat(saveReminderViewModel.showSnackBarInt.getOrAwaitValue())
             .isEqualTo(R.string.err_enter_title)
     }
